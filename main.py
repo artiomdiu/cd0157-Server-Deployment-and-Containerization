@@ -17,12 +17,15 @@ LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
 
 
 def _logger():
-    '''
+    """
     Setup logger format, level, and handler.
 
     RETURNS: log object
-    '''
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    """
+
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
 
     log = logging.getLogger(__name__)
     log.setLevel(LOG_LEVEL)
@@ -37,6 +40,7 @@ def _logger():
 LOG = _logger()
 LOG.debug("Starting with log level: %s" % LOG_LEVEL )
 APP = Flask(__name__)
+
 
 def require_jwt(function):
     """
@@ -80,7 +84,8 @@ def auth():
 
     user_data = body
 
-    return jsonify(token=_get_jwt(user_data).decode('utf-8'))
+    # return jsonify(token=_get_jwt(user_data).decode('utf-8'))
+    return jsonify(token=_get_jwt(user_data))
 
 
 @APP.route('/contents', methods=['GET'])
@@ -94,9 +99,8 @@ def decode_jwt():
     token = str.replace(str(data), 'Bearer ', '')
     try:
         data = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
-    except: # pylint: disable=bare-except
+    except:  # pylint: disable=bare-except
         abort(401)
-
 
     response = {'email': data['email'],
                 'exp': data['exp'],
@@ -110,6 +114,7 @@ def _get_jwt(user_data):
                'nbf': datetime.datetime.utcnow(),
                'email': user_data['email']}
     return jwt.encode(payload, JWT_SECRET, algorithm='HS256')
+
 
 if __name__ == '__main__':
     APP.run(host='127.0.0.1', port=8080, debug=True)
